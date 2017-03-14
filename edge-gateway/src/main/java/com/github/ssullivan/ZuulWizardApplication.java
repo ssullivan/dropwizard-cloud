@@ -1,9 +1,18 @@
 package com.github.ssullivan;
 
 import com.github.ssullivan.lifecycle.ZuulGroovyManager;
+import com.github.ssullivan.plugins.Counter;
+import com.github.ssullivan.plugins.MetricPoller;
+import com.github.ssullivan.plugins.ServoMonitor;
+import com.github.ssullivan.plugins.Tracer;
+import com.github.ssullivan.stats.monitoring.MonitorRegistry;
+import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.ContextLifecycleFilter;
+import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.http.ZuulServlet;
+import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.MonitoringHelper;
+import com.netflix.zuul.monitoring.TracerFactory;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -41,12 +50,34 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
                         new EnvironmentVariableSubstitutor(false)
                 )
         );
+    }
 
+    private void initPlugins() {
+        LOGGER.info("Registering Servo Monitor");
+        MonitorRegistry.getInstance().setPublisher(new ServoMonitor());
+
+        LOGGER.info("Starting Poller");
+        MetricPoller.startPoller();
+
+
+        LOGGER.info("Registering Servo Tracer");
+        TracerFactory.initialize(new Tracer());
+
+        LOGGER.info("Registering Servo Counter");
+        CounterFactory.initialize(new Counter());
+
+        LOGGER.info("Starting CPU stats");
+        final ThreadCpuStats stats = ThreadCpuStats.getInstance();
+        stats.start();
     }
 
     public void run(ZuulWizardConfiguration configuration, Environment environment) throws Exception {
         // Disable jersey because we don't need it for Zuul
         environment.jersey().disable();
+
+        // FIXME: Possibly integrate with the dropwizard counters, investigate how Netflix actually uses this...
+       // MonitoringHelper.initMocks();
+        initPlugins();
 
         // Configure Servlets and Filters for Zuul
         LOGGER.info("Registering zuul handler with root path prefix: {}", ROOT_PREFIX);
@@ -61,11 +92,13 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST), false,
                         ROOT_PREFIX);
 
-        // FIXME: Possibly integrate with the dropwizard counters, investigate how Netflix actually uses this...
-        MonitoringHelper.initMocks();
+        // TODO: Add Java based ZuulFilters
 
         environment.lifecycle()
                 .manage(new ZuulGroovyManager());
+
+        Debug.setDebugRequest(true);
+        Debug.setDebugRouting(true);
 
     }
 }
