@@ -37,9 +37,10 @@ public class ZuulGroovyManager implements Managed {
         String scriptRoot = _scriptRoot == null || _scriptRoot.isEmpty() ? System.getProperty("zuul.filter.root", "") : "";
         if (scriptRoot.length() > 0) scriptRoot = scriptRoot + File.separator;
         try {
-            LOGGER.info("Attempting to register GroovyFilterFilter for root {} and directories pre, route, and post");
+            LOGGER.info("Attempting to register GroovyFilterFilter for root {} and directories pre, route, and filters.post", scriptRoot);
             FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "post");
+            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "filters/post");
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
