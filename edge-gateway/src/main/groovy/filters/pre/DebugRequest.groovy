@@ -18,6 +18,8 @@ package filters.pre
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.servlet.http.HttpServletRequest
 /**
@@ -26,6 +28,7 @@ import javax.servlet.http.HttpServletRequest
  * Time: 1:51 PM
  */
 class DebugRequest extends ZuulFilter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DebugRequest.class);
     @Override
     String filterType() {
         return 'pre'
@@ -46,14 +49,17 @@ class DebugRequest extends ZuulFilter {
         HttpServletRequest req = RequestContext.currentContext.request as HttpServletRequest
 
         Debug.addRequestDebug("REQUEST:: " + req.getScheme() + " " + req.getRemoteAddr() + ":" + req.getRemotePort())
+        LOGGER.debug("REQUEST:: " + req.getScheme() + " " + req.getRemoteAddr() + ":" + req.getRemotePort());
 
         Debug.addRequestDebug("REQUEST:: > " + req.getMethod() + " " + req.getRequestURI() + " " + req.getProtocol())
+        LOGGER.debug("REQUEST:: > " + req.getMethod() + " " + req.getRequestURI() + " " + req.getProtocol())
 
         Iterator headerIt = req.getHeaderNames().iterator()
         while (headerIt.hasNext()) {
             String name = (String) headerIt.next()
             String value = req.getHeader(name)
             Debug.addRequestDebug("REQUEST:: > " + name + ":" + value)
+            LOGGER.debug("REQUEST:: > " + name + ":" + value)
         }
 
         final RequestContext ctx = RequestContext.getCurrentContext()
@@ -63,6 +69,7 @@ class DebugRequest extends ZuulFilter {
             if (inp != null) {
                 body = inp.getText()
                 Debug.addRequestDebug("REQUEST:: > " + body)
+                LOGGER.debug("REQUEST:: > " + body)
 
             }
         }

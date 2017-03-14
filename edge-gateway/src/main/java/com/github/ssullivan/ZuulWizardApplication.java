@@ -89,7 +89,8 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
         LOGGER.debug("Registering zuul container lifecycle filter with root path prefix: {}", ROOT_PREFIX);
         environment.servlets()
                 .addFilter(ContextLifecycleFilter.class.getName(), ContextLifecycleFilter.class)
-                .addMappingForUrlPatterns(EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST), false,
+                .addMappingForUrlPatterns(EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST, DispatcherType.ERROR,
+                        DispatcherType.FORWARD, DispatcherType.INCLUDE), false,
                         ROOT_PREFIX);
 
         // TODO: Add Java based ZuulFilters

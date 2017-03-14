@@ -45,7 +45,7 @@ class SendResponseFilter extends ZuulFilter {
 
     @Override
     String filterType() {
-        return 'filters.post'
+        return 'post'
     }
 
     @Override

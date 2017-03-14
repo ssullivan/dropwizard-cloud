@@ -51,6 +51,7 @@ import javax.servlet.http.HttpServletRequest
 import java.util.concurrent.atomic.AtomicReference
 
 class SimpleHostRoutingFilter extends ZuulFilter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHostRoutingFilter.class)
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
@@ -176,8 +177,14 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             Debug.addRequestDebug("ZUUL :: ${uri}")
             Debug.addRequestDebug("ZUUL :: Response statusLine > ${response.getStatusLine()}")
             Debug.addRequestDebug("ZUUL :: Response code > ${response.getStatusLine().statusCode}")
+
+            LOGGER.debug("ZUUL :: ${uri}")
+            LOGGER.debug("ZUUL :: Response statusLine > ${response.getStatusLine()}")
+            LOGGER.debug("ZUUL :: Response code > ${response.getStatusLine().statusCode}")
+
             setResponse(response)
         } catch (Exception e) {
+            LOGGER.error("", e);
             throw e;
         }
         return null
@@ -187,12 +194,15 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
         if (Debug.debugRequest()) {
             Debug.addRequestDebug("ZUUL:: host=${RequestContext.getCurrentContext().getRouteHost()}")
+            LOGGER.debug("ZUUL:: host=${RequestContext.getCurrentContext().getRouteHost()}")
             headers.each {
                 Debug.addRequestDebug("ZUUL:: Header > ${it.name}  ${it.value}")
+                LOGGER.debug("ZUUL:: Header > ${it.name}  ${it.value}")
             }
             String query = request.queryString != null ? "?" + request.queryString : ""
 
             Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}${query} HTTP/1.1")
+            LOGGER.debug("ZUUL:: > ${verb}  ${uri}${query} HTTP/1.1")
             if (requestEntity != null) {
                 requestEntity = debugRequestEntity(requestEntity)
             }
@@ -210,9 +220,10 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             return null
         }
 
-        String entity = inputStream.getText()
-        Debug.addRequestDebug("ZUUL:: Entity > ${entity}")
-        return new ByteArrayInputStream(entity.bytes)
+        byte[] entityBytes = inputStream.bytes;
+        Debug.addRequestDebug("ZUUL:: Entity > ${entityBytes}")
+        LOGGER.debug("ZUUL:: Entity > ${entityBytes}")
+        return new ByteArrayInputStream(entityBytes)
     }
 
     HttpResponse forward(CloseableHttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
@@ -394,11 +405,13 @@ class SimpleHostRoutingFilter extends ZuulFilter {
                 if (isValidHeader(header)) {
                     RequestContext.getCurrentContext().addZuulResponseHeader(header.name, header.value);
                     Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
+                    LOGGER.debug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
                 }
             }
 
             if (context.responseDataStream) {
                 byte[] origBytes = context.getResponseDataStream().bytes
+                LOGGER.debug("ZUUL_RESPONSE:: {}", origBytes);
                 context.setResponseDataStream(new ByteArrayInputStream(origBytes))
             }
         } else {
