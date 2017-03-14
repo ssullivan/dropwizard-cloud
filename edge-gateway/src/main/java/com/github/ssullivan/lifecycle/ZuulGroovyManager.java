@@ -39,7 +39,7 @@ public class ZuulGroovyManager implements Managed {
         try {
             LOGGER.info("Attempting to register GroovyFilterFilter for root {} and directories pre, route, and filters.post", scriptRoot);
             FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "filters/post");
+            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "post");
 
         } catch (Exception e) {
             throw new RuntimeException(e);

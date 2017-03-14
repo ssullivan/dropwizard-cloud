@@ -3,6 +3,7 @@ package com.github.ssullivan;
 import com.github.ssullivan.lifecycle.ZuulGroovyManager;
 import com.netflix.zuul.context.ContextLifecycleFilter;
 import com.netflix.zuul.http.ZuulServlet;
+import com.netflix.zuul.monitoring.MonitoringHelper;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -59,6 +60,9 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
                 .addFilter(ContextLifecycleFilter.class.getName(), ContextLifecycleFilter.class)
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.ASYNC, DispatcherType.REQUEST), false,
                         ROOT_PREFIX);
+
+        // FIXME: Possibly integrate with the dropwizard counters, investigate how Netflix actually uses this...
+        MonitoringHelper.initMocks();
 
         environment.lifecycle()
                 .manage(new ZuulGroovyManager());
