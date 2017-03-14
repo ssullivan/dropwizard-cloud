@@ -1,4 +1,4 @@
-group 'com.github.catalyst7193'
+group 'com.github.ssullivan'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
