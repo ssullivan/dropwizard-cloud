@@ -11,7 +11,6 @@ import com.netflix.zuul.context.ContextLifecycleFilter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.http.ZuulServlet;
 import com.netflix.zuul.monitoring.CounterFactory;
-import com.netflix.zuul.monitoring.MonitoringHelper;
 import com.netflix.zuul.monitoring.TracerFactory;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -85,7 +84,6 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
                 .addServlet(ZuulServlet.class.getName(), ZuulServlet.class)
                 .addMapping(ROOT_PREFIX);
 
-
         LOGGER.debug("Registering zuul container lifecycle filter with root path prefix: {}", ROOT_PREFIX);
         environment.servlets()
                 .addFilter(ContextLifecycleFilter.class.getName(), ContextLifecycleFilter.class)
@@ -100,6 +98,7 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
 
         Debug.setDebugRequest(true);
         Debug.setDebugRouting(true);
+
 
     }
 }
