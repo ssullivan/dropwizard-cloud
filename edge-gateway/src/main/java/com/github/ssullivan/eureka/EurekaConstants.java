@@ -8,5 +8,6 @@ public final class EurekaConstants {
         throw new AssertionError("Do not instantiate constant utility class");
     }
 
-
+    public static final String EUREKA_REGION = "eureka.region";
+    public static final String EUREKA_SHOULD_FETCH_REGISTRY = "eureka.shouldFetchRegistry";
 }
