@@ -1,0 +1,94 @@
+group 'com.github.ssullivan'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'ro.isdc.wro4j.gradle:wro4j-gradle-plugin:1.8.0.Beta4'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'wro4j'
+
+
+ext {
+    versionJQuery = '2.1.1'
+    versionBootstrap = '3.2.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations.all {
+    exclude module: 'jsr311-api'
+    exclude group: 'com.sun.jersey'
+    exclude group: 'com.sun.jersey.contribs'
+}
+
+dependencies {
+    //compile group: 'javax.servlet', name: 'servlet-api', version:
+
+    // https://mvnrepository.com/artifact/com.netflix.eureka/eureka-core-jersey2
+    compile (group: 'com.netflix.eureka', name: 'eureka-core-jersey2', version: '1.6.2') {
+        // Netflix uses old servlet-apigi 2.5 and we need something newer
+        exclude group: 'javax.servlet'
+    }
+
+
+    // https://mvnrepository.com/artifact/com.netflix.eureka/eureka-client-jersey2
+    compile (group: 'com.netflix.eureka', name: 'eureka-client-jersey2', version: '1.6.2') {
+        // Netflix uses old servlet-api 2.5 and we need something newer
+        exclude group: 'javax.servlet'
+    }
+
+
+
+    compile group: 'io.dropwizard', name: 'dropwizard-core', version: '1.0.6'
+    compile group: 'io.dropwizard', name: 'dropwizard-jetty', version: '1.0.6'
+    compile group: 'io.dropwizard', name: 'dropwizard-assets', version: '1.0.6'
+    compile group: 'io.dropwizard', name: 'dropwizard-views-freemarker', version: '1.0.6'
+    compile group: 'io.dropwizard', name: 'dropwizard-views-mustache', version: '1.0.6'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
+
+
+    compile 'ru.vyarus:dropwizard-guicey:4.0.1'
+
+    webjars "org.webjars:jquery:$versionJQuery"
+
+    /* Use `webjars "org.webjars:bootstrap:$versionBootstrap"` instead if you prefer to have fonts in your /static/... */
+    webjarsRuntime ("org.webjars:bootstrap:$versionBootstrap") {
+        transitive = false
+    }
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+webResources {
+
+    dstStaticFolder "static/eureka/"
+
+    bundle('core') {
+        js 'js/**/*.js'
+        preProcessor 'jsMin'
+    }
+
+    bundle('libs') {
+        js "webjars/jquery/$versionJQuery/jquery.min.js"
+        js "webjars/bootstrap/$versionBootstrap/js/bootstrap.min.js"
+    }
+
+    bundle('wro') {
+        css "webjars/bootstrap/$versionBootstrap/less/bootstrap.less"
+        css 'themes/default/main.css'
+
+        preProcessor 'less4j', 'cssImport'
+
+    }
+//    assets {
+//        include 'themes/default/images/**'
+//    }
+}

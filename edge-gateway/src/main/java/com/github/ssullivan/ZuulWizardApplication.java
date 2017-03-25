@@ -17,6 +17,8 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.providers.MyDataCenterInstanceConfigProvider;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.EurekaEvent;
+import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.guice.Jersey2EurekaModule;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.ContextLifecycleFilter;
@@ -29,6 +31,7 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +89,15 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
                 }));
 
         ZuulWizardApplication.eurekaClient = injector.getInstance(EurekaClient.class);
+        eurekaClient.registerEventListener(new EurekaEventListener() {
+            @Override
+            public void onEvent(EurekaEvent event) {
+                LOGGER.info("Eureka! {}", event);
+            }
+        });
+
     }
+
 
     private void initRibbon() {
     }
@@ -120,6 +131,10 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
 
 
 
+
+
+
+
         // FIXME: Possibly integrate with the dropwizard counters, investigate how Netflix actually uses this...
        // MonitoringHelper.initMocks();
         initPlugins();
@@ -141,6 +156,40 @@ public class ZuulWizardApplication extends Application<ZuulWizardConfiguration> 
 
         environment.lifecycle()
                 .manage(new ZuulGroovyManager());
+        environment.lifecycle()
+                .addLifeCycleListener(new LifeCycle.Listener() {
+                    @Override
+                    public void lifeCycleStarting(LifeCycle event) {
+                        eurekaClient.getApplicationInfoManager()
+                                .setInstanceStatus(InstanceInfo.InstanceStatus.STARTING);
+                    }
+
+                    @Override
+                    public void lifeCycleStarted(LifeCycle event) {
+                        eurekaClient.getApplicationInfoManager()
+                                .setInstanceStatus(InstanceInfo.InstanceStatus.UP);
+
+                    }
+
+                    @Override
+                    public void lifeCycleFailure(LifeCycle event, Throwable cause) {
+                        eurekaClient.getApplicationInfoManager()
+                                .setInstanceStatus(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
+                        LOGGER.error("lifeCycleFailure, instance status is now OUT_OF_SERVICE", cause);
+                    }
+
+                    @Override
+                    public void lifeCycleStopping(LifeCycle event) {
+                        eurekaClient.getApplicationInfoManager()
+                                .setInstanceStatus(InstanceInfo.InstanceStatus.DOWN);
+                    }
+
+                    @Override
+                    public void lifeCycleStopped(LifeCycle event) {
+                        eurekaClient.getApplicationInfoManager()
+                                .setInstanceStatus(InstanceInfo.InstanceStatus.DOWN);
+                    }
+                });
 
         Debug.setDebugRequest(true);
         Debug.setDebugRouting(true);
