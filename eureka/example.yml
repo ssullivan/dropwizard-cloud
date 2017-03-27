@@ -8,9 +8,10 @@
 server:
 #  softNofileLimit: 1000
 #  hardNofileLimit: 1000
+  applicationContextPath: /eureka
   applicationConnectors:
     - type: http
-      port: 8071
+      port: 8080
    # - type: https
    #   port: 8443
    #   keyStorePath: C:/Users/catal/IdeaProjects/test/example.keystore
@@ -22,11 +23,12 @@ server:
     #  keyStorePassword: example
   adminConnectors:
     - type: http
-      port: 8072
+      port: 8081
     #- type: https
     #  port: 8444
     #  keyStorePath: C:/Users/catal/IdeaProjects/test/example.keystore
     #  keyStorePassword: example
+
 
 # Logging settings.
 logging:
